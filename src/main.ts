@@ -98,6 +98,7 @@ function gitCommitAndPush(filePath: string, message: string): void {
     execSync(
       `git config user.email "41898282+github-actions[bot]@users.noreply.github.com"`,
     );
+    execSync(`git pull --rebase origin ${process.env.GITHUB_REF_NAME || "main"} 2>&1 || true`);
     execSync(`git add "${filePath}"`);
     const result = execSync(`git commit -m "${message}" 2>&1 || true`, {
       encoding: "utf-8",

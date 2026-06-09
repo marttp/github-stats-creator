@@ -26509,6 +26509,7 @@ function gitCommitAndPush(filePath, message) {
     try {
         (0, child_process_1.execSync)(`git config user.name "github-actions[bot]"`);
         (0, child_process_1.execSync)(`git config user.email "41898282+github-actions[bot]@users.noreply.github.com"`);
+        (0, child_process_1.execSync)(`git pull --rebase origin ${process.env.GITHUB_REF_NAME || "main"} 2>&1 || true`);
         (0, child_process_1.execSync)(`git add "${filePath}"`);
         const result = (0, child_process_1.execSync)(`git commit -m "${message}" 2>&1 || true`, {
             encoding: "utf-8",
