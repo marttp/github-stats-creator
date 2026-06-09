@@ -6,24 +6,7 @@ export interface CardColors {
   borderColor: string;
 }
 
-const BASE_ANIMATIONS = `
-  @keyframes fadeIn {
-    from { opacity: 0; }
-    to { opacity: 1; }
-  }
-  @keyframes scaleIn {
-    from { transform: translate(-5px, 5px) scale(0); }
-    to { transform: translate(-5px, 5px) scale(1); }
-  }
-  @keyframes slideUp {
-    from { opacity: 0; transform: translateY(10px); }
-    to { opacity: 1; transform: translateY(0); }
-  }
-  @keyframes rankAnim {
-    from { stroke-dashoffset: 251.2; }
-    to { stroke-dashoffset: var(--progress-offset); }
-  }
-`;
+const FONT = "'Segoe UI', Ubuntu, Sans-Serif";
 
 export class Card {
   width: number;
@@ -33,10 +16,8 @@ export class Card {
   title: string;
   hideBorder: boolean;
   hideTitle: boolean;
-  extraCSS: string;
   paddingX: number;
   paddingY: number;
-  animations: boolean;
 
   constructor(opts: {
     width?: number;
@@ -52,10 +33,8 @@ export class Card {
     this.title = opts.title || "";
     this.hideBorder = false;
     this.hideTitle = false;
-    this.extraCSS = "";
     this.paddingX = 25;
-    this.paddingY = 35;
-    this.animations = true;
+    this.paddingY = 38;
   }
 
   setHideBorder(v: boolean) {
@@ -64,68 +43,22 @@ export class Card {
 
   setHideTitle(v: boolean) {
     this.hideTitle = v;
-    if (v) this.height -= 30;
-  }
-
-  setCSS(css: string) {
-    this.extraCSS = css;
-  }
-
-  disableAnimations() {
-    this.animations = false;
+    if (v) this.paddingY = 15;
   }
 
   render(body: string): string {
-    const header = this.hideTitle
+    const title = this.hideTitle
       ? ""
-      : `<text
-            class="header"
-            x="${this.paddingX}"
-            y="${this.paddingY}"
-            data-testid="header"
-          >${this.title}</text>`;
+      : `<text x="${this.paddingX}" y="${this.paddingY}" font-weight="600" font-size="18" font-family="${FONT}" fill="#${this.colors.titleColor}">${this.title}</text>`;
 
-    const noAnim = this.animations
-      ? ""
-      : "* { animation-duration: 0s !important; animation-delay: 0s !important; }";
+    const bodyY = this.hideTitle ? this.paddingY - 10 : this.paddingY + 15;
 
-    return `<svg
-      width="${this.width}"
-      height="${this.height}"
-      viewBox="0 0 ${this.width} ${this.height}"
-      fill="none"
-      xmlns="http://www.w3.org/2000/svg"
-      role="img"
-    >
-      <style>
-        .header {
-          font: 600 18px 'Segoe UI', Ubuntu, Sans-Serif;
-          fill: #${this.colors.titleColor};
-          animation: fadeIn 0.8s ease-in-out forwards;
-        }
-        ${this.extraCSS}
-        ${BASE_ANIMATIONS}
-        ${noAnim}
-      </style>
-
-      <rect
-        x="0.5"
-        y="0.5"
-        rx="${this.borderRadius}"
-        height="99%"
-        width="${this.width - 1}"
-        stroke="#${this.colors.borderColor}"
-        fill="#${this.colors.bgColor}"
-        stroke-opacity="${this.hideBorder ? 0 : 1}"
-      />
-
-      ${header}
-
-      <g
-        transform="translate(0, ${this.hideTitle ? this.paddingX : this.paddingY + 20})"
-      >
-        ${body}
-      </g>
-    </svg>`;
+    return `<svg xmlns="http://www.w3.org/2000/svg" width="${this.width}" height="${this.height}" viewBox="0 0 ${this.width} ${this.height}" role="img">
+  <rect x="0.5" y="0.5" width="${this.width - 1}" height="99%" rx="${this.borderRadius}" fill="#${this.colors.bgColor}" stroke="#${this.colors.borderColor}" stroke-opacity="${this.hideBorder ? 0 : 1}"/>
+  ${title}
+  <g transform="translate(${this.paddingX}, ${bodyY})">
+    ${body}
+  </g>
+</svg>`;
   }
 }

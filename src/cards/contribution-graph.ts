@@ -2,6 +2,8 @@ import { Card } from "./card";
 import { ContributionData } from "../fetcher";
 import { Theme } from "../themes";
 
+const FONT = "'Segoe UI', Ubuntu, Sans-Serif";
+
 const LEVEL_COLORS: Record<string, Record<string, string>> = {
   light: {
     NONE: "#ebedf0",
@@ -28,43 +30,54 @@ export function renderContributionGraph(
   const colors = isDarkBg ? LEVEL_COLORS.dark : LEVEL_COLORS.light;
   const cellSize = 10;
   const cellGap = 2;
-  const cellStep = cellSize + cellGap;
+  const step = cellSize + cellGap;
 
   const weeks = data.weeks;
-  const totalWeeks = weeks.length;
-  const graphWidth = totalWeeks * cellStep + 5;
-  const graphHeight = 7 * cellStep + 5;
+  const graphW = weeks.length * step + 5;
+  const graphH = 7 * step + 5;
+  const padL = 32;
+  const padT = 20;
+  const cardW = Math.max(graphW + padL + 20, 340);
+  const cardH = graphH + padT + 45;
 
-  const leftPadding = 35;
-  const topPadding = 25;
-  const cardWidth = Math.max(graphWidth + leftPadding + 25, 340);
-  const cardHeight = graphHeight + topPadding + 55;
+  const cells: string[] = [];
+  const monthLabels: string[] = [];
+  const seen = new Set<string>();
 
-  const css = `
-    .cell { rx: 2; }
-    .month-label {
-      font: 400 10px 'Segoe UI', Ubuntu, Sans-Serif;
-      fill: #${theme.text_color};
-      opacity: 0.5;
+  const days = ["Mon", "", "Wed", "", "Fri", ""];
+  const dayLabels = days
+    .map((d, i) =>
+      d
+        ? `<text x="0" y="${padT + i * step + cellSize - 1}" font-size="9" font-family="${FONT}" fill="#${theme.text_color}" opacity="0.4">${d}</text>`
+        : "",
+    )
+    .join("\n");
+
+  for (let w = 0; w < weeks.length; w++) {
+    const week = weeks[w];
+    for (const day of week.contributionDays) {
+      const x = padL + w * step;
+      const y = padT + day.weekday * step;
+      const fill = colors[day.contributionLevel] || colors.NONE;
+      cells.push(`<rect x="${x}" y="${y}" width="${cellSize}" height="${cellSize}" rx="2" fill="${fill}"/>`);
     }
-    .day-label {
-      font: 400 9px 'Segoe UI', Ubuntu, Sans-Serif;
-      fill: #${theme.text_color};
-      opacity: 0.4;
+    if (week.contributionDays.length > 0) {
+      const d = new Date(week.contributionDays[0].date);
+      const m = d.toLocaleString("en", { month: "short" });
+      const key = `${d.getFullYear()}-${d.getMonth()}`;
+      if (!seen.has(key)) {
+        seen.add(key);
+        monthLabels.push(`<text x="${padL + w * step}" y="10" font-size="10" font-family="${FONT}" fill="#${theme.text_color}" opacity="0.5">${m}</text>`);
+      }
     }
-    .total-text {
-      font: 600 12px 'Segoe UI', Ubuntu, Sans-Serif;
-      fill: #${theme.text_color};
-    }
-    .total-number {
-      font: 700 12px 'Segoe UI', Ubuntu, Sans-Serif;
-      fill: #${theme.title_color};
-    }
-  `;
+  }
+
+  const footerY = padT + 7 * step + 18;
+  const footer = `<text x="${padL}" y="${footerY}" font-size="12" font-weight="600" font-family="${FONT}" fill="#${theme.text_color}"><tspan font-weight="700" fill="#${theme.title_color}">${data.totalContributions.toLocaleString()}</tspan> contributions in the last year</text>`;
 
   const card = new Card({
-    width: cardWidth,
-    height: cardHeight,
+    width: cardW,
+    height: cardH,
     colors: {
       titleColor: theme.title_color,
       textColor: theme.text_color,
@@ -72,64 +85,16 @@ export function renderContributionGraph(
       bgColor: theme.bg_color,
       borderColor: theme.border_color,
     },
-    title: "Contribution Graph",
   });
-  card.setCSS(css);
   card.setHideTitle(true);
 
-  const cells: string[] = [];
-  const monthLabels: string[] = [];
-  const seenMonths = new Set<string>();
-
-  const dayLabels = ["Mon", "", "Wed", "", "Fri", ""];
-  const dayLabelSvg = dayLabels
-    .map((label, i) => {
-      if (!label) return "";
-      return `<text class="day-label" x="5" y="${topPadding + i * cellStep + cellSize - 1}">${label}</text>`;
-    })
-    .join("\n");
-
-  for (let w = 0; w < weeks.length; w++) {
-    const week = weeks[w];
-    for (const day of week.contributionDays) {
-      const x = leftPadding + w * cellStep;
-      const y = topPadding + day.weekday * cellStep;
-      const color = colors[day.contributionLevel] || colors.NONE;
-      cells.push(
-        `<rect class="cell" x="${x}" y="${y}" width="${cellSize}" height="${cellSize}" fill="${color}" />`,
-      );
-    }
-
-    if (week.contributionDays.length > 0) {
-      const firstDay = week.contributionDays[0];
-      const date = new Date(firstDay.date);
-      const monthName = date.toLocaleString("en", { month: "short" });
-      const monthKey = `${date.getFullYear()}-${date.getMonth()}`;
-      if (!seenMonths.has(monthKey)) {
-        seenMonths.add(monthKey);
-        monthLabels.push(
-          `<text class="month-label" x="${leftPadding + w * cellStep}" y="12">${monthName}</text>`,
-        );
-      }
-    }
-  }
-
-  const totalY = topPadding + 7 * cellStep + 20;
-  const totalText = `<text class="total-text" x="${leftPadding}" y="${totalY}"><tspan class="total-number">${data.totalContributions.toLocaleString()}</tspan> contributions in the last year</text>`;
-
-  return card.render(`
-    ${monthLabels.join("\n")}
-    ${dayLabelSvg}
-    ${cells.join("\n")}
-    ${totalText}
-  `);
+  return card.render(`${monthLabels.join("\n")}\n${dayLabels}\n${cells.join("\n")}\n${footer}`);
 }
 
-function isDark(hexColor: string): boolean {
-  const hex = hexColor.replace("#", "");
-  const r = parseInt(hex.substring(0, 2), 16);
-  const g = parseInt(hex.substring(2, 4), 16);
-  const b = parseInt(hex.substring(4, 6), 16);
-  const luminance = (0.299 * r + 0.587 * g + 0.114 * b) / 255;
-  return luminance < 0.5;
+function isDark(hex: string): boolean {
+  const h = hex.replace("#", "");
+  const r = parseInt(h.substring(0, 2), 16);
+  const g = parseInt(h.substring(2, 4), 16);
+  const b = parseInt(h.substring(4, 6), 16);
+  return (0.299 * r + 0.587 * g + 0.114 * b) / 255 < 0.5;
 }

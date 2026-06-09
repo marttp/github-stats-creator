@@ -1,8 +1,10 @@
 import { Card } from "./card";
 import { StatsData } from "../fetcher";
-import { calculateRank, Rank } from "../rank";
+import { calculateRank } from "../rank";
 import { icons } from "../icons";
 import { Theme } from "../themes";
+
+const FONT = "'Segoe UI', Ubuntu, Sans-Serif";
 
 function kFormatter(n: number): string {
   if (n >= 1000000) return (n / 1000000).toFixed(1) + "M";
@@ -24,34 +26,7 @@ const STAT_ITEMS = [
   { key: "contribs", icon: icons.contribs, label: "Contributed to" },
 ] as const;
 
-function statRow(
-  icon: string,
-  label: string,
-  value: string,
-  index: number,
-  showIcons: boolean,
-  iconColor: string,
-  valueX: number,
-): string {
-  const delay = (index + 1) * 150;
-  const y = index * 25;
-
-  const iconSvg = showIcons
-    ? `<svg class="stat-icon" viewBox="0 0 16 16" width="16" height="16" fill="#${iconColor}">
-        ${icon}
-      </svg>`
-    : "";
-
-  const labelX = showIcons ? 24 : 0;
-
-  return `<g transform="translate(25, ${y})">
-      <g class="stat-row" style="animation-delay: ${delay}ms">
-        ${iconSvg}
-        <text class="stat-label" x="${labelX}" y="12.5">${label}:</text>
-        <text class="stat-value" x="${valueX}" y="12.5">${value}</text>
-      </g>
-    </g>`;
-}
+const ROW_H = 25;
 
 export function renderStatsCard(
   stats: StatsData,
@@ -62,7 +37,7 @@ export function renderStatsCard(
     includeAllCommits: boolean;
   },
 ): string {
-  const rank: Rank = calculateRank({
+  const rank = calculateRank({
     allCommits: options.includeAllCommits,
     commits: stats.totalCommits,
     prs: stats.totalPRs,
@@ -81,62 +56,38 @@ export function renderStatsCard(
     contribs: stats.contributedTo,
   };
 
-  const showRank = !options.hideRank;
-  const cardWidth = showRank ? 450 : 340;
-  const lineHeight = 25;
-  const statCount = STAT_ITEMS.length;
-  const bodyHeight = statCount * lineHeight;
-  const cardHeight = Math.max(bodyHeight + 75, 150);
-  const progress = 100 - rank.percentile;
-  const circumference = 2 * Math.PI * 40;
-  const progressOffset = ((100 - progress) / 100) * circumference;
-  const valueX = options.showIcons ? 155 : 130;
+  const iconX = 0;
+  const labelX = options.showIcons ? 24 : 0;
+  const valueX = labelX + 120;
+  const contentW = valueX + 70;
 
-  const css = `
-    .stat-label {
-      font: 400 14px 'Segoe UI', Ubuntu, Sans-Serif;
-      fill: #${theme.text_color};
-    }
-    .stat-value {
-      font: 700 14px 'Segoe UI', Ubuntu, Sans-Serif;
-      fill: #${theme.text_color};
-    }
-    .stat-icon {
-      y: -1;
-    }
-    .stat-row {
-      opacity: 0;
-      animation: slideUp 0.4s ease-in-out forwards;
-    }
-    .rank-circle-bg {
-      stroke: #${theme.ring_color};
-      fill: none;
-      stroke-width: 6;
-      opacity: 0.15;
-    }
-    .rank-circle {
-      stroke: #${theme.ring_color};
-      stroke-dasharray: ${circumference};
-      stroke-dashoffset: ${circumference};
-      fill: none;
-      stroke-width: 6;
-      stroke-linecap: round;
-      transform-origin: 50% 50%;
-      transform: rotate(-90deg);
-      --progress-offset: ${progressOffset};
-      animation: rankAnim 1s 0.5s ease-in-out forwards;
-    }
-    .rank-label {
-      font: 600 12px 'Segoe UI', Ubuntu, Sans-Serif;
-      fill: #${theme.text_color};
-      opacity: 0.6;
-    }
-    .rank-level {
-      font: 800 28px 'Segoe UI', Ubuntu, Sans-Serif;
-      fill: #${theme.text_color};
-      animation: scaleIn 0.4s ease-in-out forwards;
-    }
-  `;
+  const showRank = !options.hideRank;
+  const rankR = 38;
+  const rankArea = showRank ? rankR * 2 + 30 : 0;
+  const cardWidth = Math.max(contentW + rankArea + 25, 320);
+  const bodyH = STAT_ITEMS.length * ROW_H;
+  const cardHeight = Math.max(bodyH + 60, 150);
+
+  const rows = STAT_ITEMS.map((item, i) => {
+    const y = i * ROW_H;
+    const icon = options.showIcons
+      ? `<svg x="${iconX}" y="0" width="16" height="16" viewBox="0 0 16 16" fill="#${theme.icon_color}">${icons[item.icon as keyof typeof icons]}</svg>`
+      : "";
+    return `${icon}<text x="${labelX}" y="${y + 13}" font-size="14" font-family="${FONT}" fill="#${theme.text_color}">${item.label}:</text><text x="${valueX}" y="${y + 13}" font-size="14" font-weight="700" font-family="${FONT}" fill="#${theme.text_color}">${kFormatter(values[item.key])}</text>`;
+  }).join("\n");
+
+  const rankSvg = showRank
+    ? (() => {
+        const cx = cardWidth - 25 - rankR - 5;
+        const cy = cardHeight / 2 - 10;
+        const circ = 2 * Math.PI * rankR;
+        const filled = ((100 - rank.percentile) / 100) * circ;
+        return `<circle cx="${cx}" cy="${cy}" r="${rankR}" fill="none" stroke="#${theme.border_color}" stroke-width="6" opacity="0.4"/>
+<circle cx="${cx}" cy="${cy}" r="${rankR}" fill="none" stroke="#${theme.ring_color}" stroke-width="6" stroke-linecap="round" stroke-dasharray="${circ}" stroke-dashoffset="${circ - filled}" transform="rotate(-90 ${cx} ${cy})"/>
+<text x="${cx}" y="${cy - 6}" text-anchor="middle" font-size="11" font-weight="600" font-family="${FONT}" fill="#${theme.text_color}" opacity="0.6">RANK</text>
+<text x="${cx}" y="${cy + 18}" text-anchor="middle" font-size="22" font-weight="800" font-family="${FONT}" fill="#${theme.text_color}">${rank.level}</text>`;
+      })()
+    : "";
 
   const card = new Card({
     width: cardWidth,
@@ -150,33 +101,6 @@ export function renderStatsCard(
     },
     title: `${encodeHTML(stats.name)}'s GitHub Stats`,
   });
-  card.setCSS(css);
 
-  const statRows = STAT_ITEMS.map((item, i) =>
-    statRow(
-      item.icon,
-      item.label,
-      kFormatter(values[item.key]),
-      i,
-      options.showIcons,
-      theme.icon_color,
-      valueX,
-    ),
-  ).join("\n");
-
-  const rankCircle = showRank
-    ? `<g transform="translate(${cardWidth - 80}, ${(cardHeight - 100) / 2})">
-        <circle class="rank-circle-bg" cx="40" cy="40" r="40" />
-        <circle class="rank-circle" cx="40" cy="40" r="40" />
-        <text class="rank-label" x="40" y="28" text-anchor="middle">RANK</text>
-        <text class="rank-level" x="40" y="56" text-anchor="middle">${rank.level}</text>
-      </g>`
-    : "";
-
-  return card.render(`
-    ${rankCircle}
-    <g>
-      ${statRows}
-    </g>
-  `);
+  return card.render(`${rows}\n${rankSvg}`);
 }
