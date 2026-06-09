@@ -25917,7 +25917,7 @@ const STAT_ITEMS = [
     { key: "issues", icon: icons_1.icons.issues, label: "Total Issues" },
     { key: "contribs", icon: icons_1.icons.contribs, label: "Contributed to" },
 ];
-function statRow(icon, label, value, index, showIcons, textColor, iconColor) {
+function statRow(icon, label, value, index, showIcons, iconColor, valueX) {
     const delay = (index + 1) * 150;
     const y = index * 25;
     const iconSvg = showIcons
@@ -25925,10 +25925,11 @@ function statRow(icon, label, value, index, showIcons, textColor, iconColor) {
         ${icon}
       </svg>`
         : "";
+    const labelX = showIcons ? 24 : 0;
     return `<g class="stat-row" style="animation-delay: ${delay}ms" transform="translate(25, ${y})">
       ${iconSvg}
-      <text class="stat-label" ${showIcons ? 'x="24"' : ""} y="12.5">${label}:</text>
-      <text class="stat-value" y="12.5">${value}</text>
+      <text class="stat-label" x="${labelX}" y="12.5">${label}:</text>
+      <text class="stat-value" x="${valueX}" y="12.5">${value}</text>
     </g>`;
 }
 function renderStatsCard(stats, theme, options) {
@@ -25958,6 +25959,7 @@ function renderStatsCard(stats, theme, options) {
     const progress = 100 - rank.percentile;
     const circumference = 2 * Math.PI * 40;
     const progressOffset = ((100 - progress) / 100) * circumference;
+    const valueX = options.showIcons ? 155 : 130;
     const css = `
     .stat-label {
       font: 400 14px 'Segoe UI', Ubuntu, Sans-Serif;
@@ -26016,8 +26018,7 @@ function renderStatsCard(stats, theme, options) {
         title: `${encodeHTML(stats.name)}'s GitHub Stats`,
     });
     card.setCSS(css);
-    const statRows = STAT_ITEMS.map((item, i) => statRow(item.icon, item.label, kFormatter(values[item.key]), i, options.showIcons, theme.text_color, theme.icon_color)).join("\n");
-    const valueX = options.showIcons ? 155 : 130;
+    const statRows = STAT_ITEMS.map((item, i) => statRow(item.icon, item.label, kFormatter(values[item.key]), i, options.showIcons, theme.icon_color, valueX)).join("\n");
     const rankCircle = showRank
         ? `<g transform="translate(${cardWidth - 80}, ${(cardHeight - 100) / 2})">
         <circle class="rank-circle-bg" cx="40" cy="40" r="40" />
@@ -26031,9 +26032,6 @@ function renderStatsCard(stats, theme, options) {
     <g>
       ${statRows}
     </g>
-    <style>
-      .stat-value { x: ${valueX}; }
-    </style>
   `);
 }
 

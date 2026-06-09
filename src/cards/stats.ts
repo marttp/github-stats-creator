@@ -30,8 +30,8 @@ function statRow(
   value: string,
   index: number,
   showIcons: boolean,
-  textColor: string,
   iconColor: string,
+  valueX: number,
 ): string {
   const delay = (index + 1) * 150;
   const y = index * 25;
@@ -42,10 +42,12 @@ function statRow(
       </svg>`
     : "";
 
+  const labelX = showIcons ? 24 : 0;
+
   return `<g class="stat-row" style="animation-delay: ${delay}ms" transform="translate(25, ${y})">
       ${iconSvg}
-      <text class="stat-label" ${showIcons ? 'x="24"' : ""} y="12.5">${label}:</text>
-      <text class="stat-value" y="12.5">${value}</text>
+      <text class="stat-label" x="${labelX}" y="12.5">${label}:</text>
+      <text class="stat-value" x="${valueX}" y="12.5">${value}</text>
     </g>`;
 }
 
@@ -86,6 +88,7 @@ export function renderStatsCard(
   const progress = 100 - rank.percentile;
   const circumference = 2 * Math.PI * 40;
   const progressOffset = ((100 - progress) / 100) * circumference;
+  const valueX = options.showIcons ? 155 : 130;
 
   const css = `
     .stat-label {
@@ -154,12 +157,10 @@ export function renderStatsCard(
       kFormatter(values[item.key]),
       i,
       options.showIcons,
-      theme.text_color,
       theme.icon_color,
+      valueX,
     ),
   ).join("\n");
-
-  const valueX = options.showIcons ? 155 : 130;
 
   const rankCircle = showRank
     ? `<g transform="translate(${cardWidth - 80}, ${(cardHeight - 100) / 2})">
@@ -175,8 +176,5 @@ export function renderStatsCard(
     <g>
       ${statRows}
     </g>
-    <style>
-      .stat-value { x: ${valueX}; }
-    </style>
   `);
 }
