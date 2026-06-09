@@ -33,7 +33,7 @@ function metricRow(
   iconColor: string,
   textColor: string,
 ): string {
-  const icon = `<svg x="${x}" y="${y + 1}" width="13" height="13" viewBox="0 0 16 16" fill="#${iconColor}" opacity="0.6">${m.icon}</svg>`;
+  const icon = `<svg x="${x}" y="${y}" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#${iconColor}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" opacity="0.55">${m.icon}</svg>`;
   const numX = x + 18;
   const formatted = kFormatter(m.value);
   const labelX = numX + Math.ceil(formatted.length * CHAR_W) + 6;
