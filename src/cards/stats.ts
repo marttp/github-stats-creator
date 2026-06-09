@@ -44,10 +44,12 @@ function statRow(
 
   const labelX = showIcons ? 24 : 0;
 
-  return `<g class="stat-row" style="animation-delay: ${delay}ms" transform="translate(25, ${y})">
-      ${iconSvg}
-      <text class="stat-label" x="${labelX}" y="12.5">${label}:</text>
-      <text class="stat-value" x="${valueX}" y="12.5">${value}</text>
+  return `<g transform="translate(25, ${y})">
+      <g class="stat-row" style="animation-delay: ${delay}ms">
+        ${iconSvg}
+        <text class="stat-label" x="${labelX}" y="12.5">${label}:</text>
+        <text class="stat-value" x="${valueX}" y="12.5">${value}</text>
+      </g>
     </g>`;
 }
 
