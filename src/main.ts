@@ -2,11 +2,9 @@ import * as core from "@actions/core";
 import * as fs from "fs";
 import * as path from "path";
 import { execSync } from "child_process";
-import { fetchStats, fetchTopLangs, fetchContributions } from "./fetcher";
+import { fetchStats } from "./fetcher";
 import { getTheme } from "./themes";
 import { renderStatsCard } from "./cards/stats";
-import { renderTopLangsCard } from "./cards/top-langs";
-import { renderContributionGraph } from "./cards/contribution-graph";
 
 async function run(): Promise<void> {
   try {
@@ -20,57 +18,25 @@ async function run(): Promise<void> {
       );
     }
     const token = core.getInput("github_token", { required: true });
-    const cardType = core.getInput("card_type") || "stats";
     const themeName = core.getInput("theme") || "default";
     const outputPath = core.getInput("output_path") || "gh-stats.svg";
     const commitMessage =
       core.getInput("commit_message") || "Update GitHub stats SVG [skip ci]";
     const showIcons = core.getInput("show_icons") !== "false";
-    const hideRank = core.getInput("hide_rank") === "true";
     const includeAllCommits = core.getInput("include_all_commits") === "true";
-    const langsCount = parseInt(core.getInput("langs_count") || "5", 10);
 
-    core.info(`Generating ${cardType} card for user: ${username}`);
+    core.info(`Generating stats card for user: ${username}`);
     core.info(`Theme: ${themeName}`);
 
     const theme = getTheme(themeName);
-    let svg: string;
-
-    switch (cardType) {
-      case "stats": {
-        core.info("Fetching stats data...");
-        const stats = await fetchStats(username, token, includeAllCommits);
-        core.info(
-          `Stats fetched: ${stats.totalCommits} commits, ${stats.totalStars} stars`,
-        );
-        svg = renderStatsCard(stats, theme, {
-          showIcons,
-          hideRank,
-          includeAllCommits,
-        });
-        break;
-      }
-      case "top-langs": {
-        core.info("Fetching language data...");
-        const langs = await fetchTopLangs(username, token);
-        core.info(`Languages fetched: ${langs.languages.length} languages`);
-        svg = renderTopLangsCard(langs, theme, { langsCount });
-        break;
-      }
-      case "contribution-graph": {
-        core.info("Fetching contribution data...");
-        const contributions = await fetchContributions(username, token);
-        core.info(
-          `Contributions fetched: ${contributions.totalContributions} total`,
-        );
-        svg = renderContributionGraph(contributions, theme, {});
-        break;
-      }
-      default:
-        throw new Error(
-          `Unknown card_type: "${cardType}". Supported: stats, top-langs, contribution-graph`,
-        );
-    }
+    const stats = await fetchStats(username, token, includeAllCommits);
+    core.info(
+      `Stats fetched: ${stats.totalCommits} commits, ${stats.totalStars} stars`,
+    );
+    const svg = renderStatsCard(stats, theme, {
+      showIcons,
+      includeAllCommits,
+    });
 
     const fullPath = path.resolve(outputPath);
     const dir = path.dirname(fullPath);

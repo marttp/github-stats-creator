@@ -33,19 +33,6 @@ interface GraphQLResponse {
         nodes: RepoNode[];
         pageInfo: { hasNextPage: boolean; endCursor: string | null };
       };
-      contributionsCollection: {
-        contributionCalendar: {
-          totalContributions: number;
-          weeks: {
-            contributionDays: {
-              contributionCount: number;
-              contributionLevel: string;
-              weekday: number;
-              date: string;
-            }[];
-          }[];
-        };
-      };
     };
   };
   errors?: { message: string; type?: string }[];
@@ -146,26 +133,6 @@ query userInfo($login: String!, $after: String) {
 }
 `;
 
-const CONTRIBUTION_QUERY = `
-query userInfo($login: String!) {
-  user(login: $login) {
-    contributionsCollection {
-      contributionCalendar {
-        totalContributions
-        weeks {
-          contributionDays {
-            contributionCount
-            contributionLevel
-            weekday
-            date
-          }
-        }
-      }
-    }
-  }
-}
-`;
-
 export interface StatsData {
   name: string;
   login: string;
@@ -177,22 +144,6 @@ export interface StatsData {
   contributedTo: number;
   followers: number;
   repos: number;
-}
-
-export interface LangData {
-  languages: { name: string; size: number; color: string }[];
-}
-
-export interface ContributionData {
-  totalContributions: number;
-  weeks: {
-    contributionDays: {
-      contributionCount: number;
-      contributionLevel: string;
-      weekday: number;
-      date: string;
-    }[];
-  }[];
 }
 
 async function fetchAllRepos(
@@ -256,68 +207,6 @@ export async function fetchStats(
     contributedTo: user.repositoriesContributedTo.totalCount,
     followers: user.followers.totalCount,
     repos: user.repositories.totalCount,
-  };
-}
-
-export async function fetchTopLangs(
-  username: string,
-  token: string,
-): Promise<LangData> {
-  const res = await graphqlRequest(STATS_QUERY, { login: username }, token);
-
-  if (res.errors?.length) {
-    throw new Error(`GraphQL error: ${res.errors.map((e) => e.message).join(", ")}`);
-  }
-  if (!res.data?.user) {
-    throw new Error(`User not found: ${username}`);
-  }
-
-  const repoNodes = await fetchAllRepos(username, token, res);
-
-  const langMap = new Map<string, { size: number; color: string }>();
-  for (const repo of repoNodes) {
-    for (const edge of repo.languages.edges) {
-      const name = edge.node.name;
-      const existing = langMap.get(name);
-      if (existing) {
-        existing.size += edge.size;
-      } else {
-        langMap.set(name, {
-          size: edge.size,
-          color: edge.node.color || "#8b949e",
-        });
-      }
-    }
-  }
-
-  const languages = Array.from(langMap.entries())
-    .map(([name, data]) => ({ name, ...data }))
-    .sort((a, b) => b.size - a.size);
-
-  return { languages };
-}
-
-export async function fetchContributions(
-  username: string,
-  token: string,
-): Promise<ContributionData> {
-  const res = await graphqlRequest(
-    CONTRIBUTION_QUERY,
-    { login: username },
-    token,
-  );
-
-  if (res.errors?.length) {
-    throw new Error(`GraphQL error: ${res.errors.map((e) => e.message).join(", ")}`);
-  }
-  if (!res.data?.user) {
-    throw new Error(`User not found: ${username}`);
-  }
-
-  const calendar = res.data.user.contributionsCollection.contributionCalendar;
-  return {
-    totalContributions: calendar.totalContributions,
-    weeks: calendar.weeks,
   };
 }
 

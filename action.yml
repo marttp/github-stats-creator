@@ -15,10 +15,6 @@ inputs:
     description: "GitHub token (PAT or GITHUB_TOKEN). Needs read:user scope."
     required: true
     default: ${{ github.token }}
-  card_type:
-    description: "Card type to generate: stats, top-langs, contribution-graph"
-    required: false
-    default: "stats"
   theme:
     description: "Theme: default, dark, radical, gruvbox, tokyonight, onedark, dracula, monokai, nord, highcontrast"
     required: false
@@ -35,18 +31,10 @@ inputs:
     description: "Show icons on the stats card"
     required: false
     default: "true"
-  hide_rank:
-    description: "Hide the rank circle on the stats card"
-    required: false
-    default: "false"
   include_all_commits:
     description: "Include all-time commits (uses REST API search, may be slower)"
     required: false
     default: "false"
-  langs_count:
-    description: "Number of languages to show on top-langs card"
-    required: false
-    default: "5"
 
 outputs:
   svg_path:

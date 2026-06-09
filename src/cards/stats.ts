@@ -47,7 +47,6 @@ export function renderStatsCard(
   theme: Theme,
   options: {
     showIcons: boolean;
-    hideRank: boolean;
     includeAllCommits: boolean;
   },
 ): string {
@@ -72,7 +71,7 @@ export function renderStatsCard(
   const firstRowY = sectionLabelY + 12;
 
   const impactX = p;
-  const activityX = Math.floor(cardWidth / 2) + 10;
+  const activityX = p + 185;
 
   const maxRows = Math.max(impactMetrics.length, activityMetrics.length);
   const bodyH = maxRows * ROW_H;

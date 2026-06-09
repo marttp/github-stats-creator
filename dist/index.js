@@ -25643,161 +25643,6 @@ module.exports = {
 
 /***/ }),
 
-/***/ 8913:
-/***/ ((__unused_webpack_module, exports) => {
-
-"use strict";
-
-Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.Card = void 0;
-const FONT = "'Segoe UI', Ubuntu, Sans-Serif";
-class Card {
-    width;
-    height;
-    borderRadius;
-    colors;
-    title;
-    subtitle;
-    hideBorder;
-    hideTitle;
-    padding;
-    constructor(opts) {
-        this.width = opts.width || 450;
-        this.height = opts.height || 200;
-        this.borderRadius = opts.borderRadius || 4.5;
-        this.colors = opts.colors;
-        this.title = opts.title || "";
-        this.subtitle = opts.subtitle || "";
-        this.hideBorder = false;
-        this.hideTitle = false;
-        this.padding = 24;
-    }
-    setHideBorder(v) {
-        this.hideBorder = v;
-    }
-    setHideTitle(v) {
-        this.hideTitle = v;
-    }
-    render(body) {
-        const p = this.padding;
-        let header = "";
-        if (!this.hideTitle && this.title) {
-            header = `<text x="${p}" y="${p + 16}" font-size="16" font-weight="600" font-family="${FONT}" fill="#${this.colors.titleColor}">${this.title}</text>`;
-            if (this.subtitle) {
-                header += `\n<text x="${p}" y="${p + 32}" font-size="11" font-family="${FONT}" fill="#${this.colors.textColor}" opacity="0.5">${this.subtitle}</text>`;
-            }
-        }
-        const bodyY = this.hideTitle ? p : p + (this.subtitle ? 46 : 30);
-        const sep = this.hideTitle
-            ? ""
-            : `<line x1="${p}" y1="${bodyY - 8}" x2="${this.width - p}" y2="${bodyY - 8}" stroke="#${this.colors.borderColor}" stroke-width="0.5" opacity="0.4"/>`;
-        return `<svg xmlns="http://www.w3.org/2000/svg" width="${this.width}" height="${this.height}" viewBox="0 0 ${this.width} ${this.height}" role="img">
-  <rect x="0.5" y="0.5" width="${this.width - 1}" height="99%" rx="${this.borderRadius}" fill="#${this.colors.bgColor}" stroke="#${this.colors.borderColor}" stroke-opacity="${this.hideBorder ? 0 : 1}"/>
-  ${header}
-  ${sep}
-  <g transform="translate(${p}, ${bodyY})">
-    ${body}
-  </g>
-</svg>`;
-    }
-}
-exports.Card = Card;
-
-
-/***/ }),
-
-/***/ 6996:
-/***/ ((__unused_webpack_module, exports, __nccwpck_require__) => {
-
-"use strict";
-
-Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.renderContributionGraph = renderContributionGraph;
-const card_1 = __nccwpck_require__(8913);
-const FONT = "'Segoe UI', Ubuntu, Sans-Serif";
-const LEVEL_COLORS = {
-    light: {
-        NONE: "#ebedf0",
-        FIRST_QUARTILE: "#9be9a8",
-        SECOND_QUARTILE: "#40c463",
-        THIRD_QUARTILE: "#30a14e",
-        FOURTH_QUARTILE: "#216e39",
-    },
-    dark: {
-        NONE: "#161b22",
-        FIRST_QUARTILE: "#0e4429",
-        SECOND_QUARTILE: "#006d32",
-        THIRD_QUARTILE: "#26a641",
-        FOURTH_QUARTILE: "#39d353",
-    },
-};
-function renderContributionGraph(data, theme, _options) {
-    const isDarkBg = isDark(theme.bg_color);
-    const colors = isDarkBg ? LEVEL_COLORS.dark : LEVEL_COLORS.light;
-    const cellSize = 10;
-    const cellGap = 2;
-    const step = cellSize + cellGap;
-    const weeks = data.weeks;
-    const graphW = weeks.length * step + 5;
-    const graphH = 7 * step + 5;
-    const padL = 32;
-    const padT = 20;
-    const cardW = Math.max(graphW + padL + 20, 340);
-    const cardH = graphH + padT + 45;
-    const cells = [];
-    const monthLabels = [];
-    const seen = new Set();
-    const days = ["Mon", "", "Wed", "", "Fri", ""];
-    const dayLabels = days
-        .map((d, i) => d
-        ? `<text x="0" y="${padT + i * step + cellSize - 1}" font-size="9" font-family="${FONT}" fill="#${theme.text_color}" opacity="0.4">${d}</text>`
-        : "")
-        .join("\n");
-    for (let w = 0; w < weeks.length; w++) {
-        const week = weeks[w];
-        for (const day of week.contributionDays) {
-            const x = padL + w * step;
-            const y = padT + day.weekday * step;
-            const fill = colors[day.contributionLevel] || colors.NONE;
-            cells.push(`<rect x="${x}" y="${y}" width="${cellSize}" height="${cellSize}" rx="2" fill="${fill}"/>`);
-        }
-        if (week.contributionDays.length > 0) {
-            const d = new Date(week.contributionDays[0].date);
-            const m = d.toLocaleString("en", { month: "short" });
-            const key = `${d.getFullYear()}-${d.getMonth()}`;
-            if (!seen.has(key)) {
-                seen.add(key);
-                monthLabels.push(`<text x="${padL + w * step}" y="10" font-size="10" font-family="${FONT}" fill="#${theme.text_color}" opacity="0.5">${m}</text>`);
-            }
-        }
-    }
-    const footerY = padT + 7 * step + 18;
-    const footer = `<text x="${padL}" y="${footerY}" font-size="12" font-weight="600" font-family="${FONT}" fill="#${theme.text_color}"><tspan font-weight="700" fill="#${theme.title_color}">${data.totalContributions.toLocaleString()}</tspan> contributions in the last year</text>`;
-    const card = new card_1.Card({
-        width: cardW,
-        height: cardH,
-        colors: {
-            titleColor: theme.title_color,
-            textColor: theme.text_color,
-            iconColor: theme.icon_color,
-            bgColor: theme.bg_color,
-            borderColor: theme.border_color,
-        },
-    });
-    card.setHideTitle(true);
-    return card.render(`${monthLabels.join("\n")}\n${dayLabels}\n${cells.join("\n")}\n${footer}`);
-}
-function isDark(hex) {
-    const h = hex.replace("#", "");
-    const r = parseInt(h.substring(0, 2), 16);
-    const g = parseInt(h.substring(2, 4), 16);
-    const b = parseInt(h.substring(4, 6), 16);
-    return (0.299 * r + 0.587 * g + 0.114 * b) / 255 < 0.5;
-}
-
-
-/***/ }),
-
 /***/ 1280:
 /***/ ((__unused_webpack_module, exports, __nccwpck_require__) => {
 
@@ -25849,7 +25694,7 @@ function renderStatsCard(stats, theme, options) {
     const sectionLabelY = sepY + 16;
     const firstRowY = sectionLabelY + 12;
     const impactX = p;
-    const activityX = Math.floor(cardWidth / 2) + 10;
+    const activityX = p + 185;
     const maxRows = Math.max(impactMetrics.length, activityMetrics.length);
     const bodyH = maxRows * ROW_H;
     const cardHeight = firstRowY + bodyH + p;
@@ -25870,53 +25715,6 @@ function renderStatsCard(stats, theme, options) {
   ${impactRows}
   ${activityRows}
 </svg>`;
-}
-
-
-/***/ }),
-
-/***/ 6596:
-/***/ ((__unused_webpack_module, exports, __nccwpck_require__) => {
-
-"use strict";
-
-Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.renderTopLangsCard = renderTopLangsCard;
-const card_1 = __nccwpck_require__(8913);
-const FONT = "'Segoe UI', Ubuntu, Sans-Serif";
-function renderTopLangsCard(data, theme, options) {
-    const langs = data.languages.slice(0, options.langsCount);
-    const totalSize = langs.reduce((s, l) => s + l.size, 0);
-    const innerW = 340;
-    const barH = 8;
-    const rowH = 34;
-    const cardWidth = innerW + 48;
-    const cardHeight = langs.length * rowH + 80;
-    const rows = langs
-        .map((lang, i) => {
-        const pct = totalSize > 0 ? ((lang.size / totalSize) * 100).toFixed(1) : "0.0";
-        const fillW = totalSize > 0 ? (lang.size / totalSize) * innerW : 0;
-        const y = i * rowH;
-        return `<circle cx="6" cy="${y + 10}" r="5" fill="${lang.color}"/>
-<text x="18" y="${y + 14}" font-size="13" font-weight="600" font-family="${FONT}" fill="#${theme.text_color}">${lang.name}</text>
-<text x="${innerW}" y="${y + 14}" font-size="13" font-weight="600" font-family="${FONT}" fill="#${theme.text_color}" text-anchor="end">${pct}%</text>
-<rect x="0" y="${y + 22}" width="${innerW}" height="${barH}" rx="4" fill="#${theme.text_color}" opacity="0.06"/>
-<rect x="0" y="${y + 22}" width="${fillW}" height="${barH}" rx="4" fill="${lang.color}" opacity="0.85"/>`;
-    })
-        .join("\n");
-    const card = new card_1.Card({
-        width: cardWidth,
-        height: cardHeight,
-        colors: {
-            titleColor: theme.title_color,
-            textColor: theme.text_color,
-            iconColor: theme.icon_color,
-            bgColor: theme.bg_color,
-            borderColor: theme.border_color,
-        },
-        title: "Most Used Languages",
-    });
-    return card.render(rows);
 }
 
 
@@ -25962,8 +25760,6 @@ var __importStar = (this && this.__importStar) || (function () {
 })();
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.fetchStats = fetchStats;
-exports.fetchTopLangs = fetchTopLangs;
-exports.fetchContributions = fetchContributions;
 const https = __importStar(__nccwpck_require__(5692));
 function graphqlRequest(query, variables, token) {
     return new Promise((resolve, reject) => {
@@ -26039,25 +25835,6 @@ query userInfo($login: String!, $after: String) {
   }
 }
 `;
-const CONTRIBUTION_QUERY = `
-query userInfo($login: String!) {
-  user(login: $login) {
-    contributionsCollection {
-      contributionCalendar {
-        totalContributions
-        weeks {
-          contributionDays {
-            contributionCount
-            contributionLevel
-            weekday
-            date
-          }
-        }
-      }
-    }
-  }
-}
-`;
 async function fetchAllRepos(login, token, initialData) {
     const allNodes = [
         ...(initialData.data?.user?.repositories.nodes || []),
@@ -26101,50 +25878,6 @@ async function fetchStats(username, token, includeAllCommits) {
         contributedTo: user.repositoriesContributedTo.totalCount,
         followers: user.followers.totalCount,
         repos: user.repositories.totalCount,
-    };
-}
-async function fetchTopLangs(username, token) {
-    const res = await graphqlRequest(STATS_QUERY, { login: username }, token);
-    if (res.errors?.length) {
-        throw new Error(`GraphQL error: ${res.errors.map((e) => e.message).join(", ")}`);
-    }
-    if (!res.data?.user) {
-        throw new Error(`User not found: ${username}`);
-    }
-    const repoNodes = await fetchAllRepos(username, token, res);
-    const langMap = new Map();
-    for (const repo of repoNodes) {
-        for (const edge of repo.languages.edges) {
-            const name = edge.node.name;
-            const existing = langMap.get(name);
-            if (existing) {
-                existing.size += edge.size;
-            }
-            else {
-                langMap.set(name, {
-                    size: edge.size,
-                    color: edge.node.color || "#8b949e",
-                });
-            }
-        }
-    }
-    const languages = Array.from(langMap.entries())
-        .map(([name, data]) => ({ name, ...data }))
-        .sort((a, b) => b.size - a.size);
-    return { languages };
-}
-async function fetchContributions(username, token) {
-    const res = await graphqlRequest(CONTRIBUTION_QUERY, { login: username }, token);
-    if (res.errors?.length) {
-        throw new Error(`GraphQL error: ${res.errors.map((e) => e.message).join(", ")}`);
-    }
-    if (!res.data?.user) {
-        throw new Error(`User not found: ${username}`);
-    }
-    const calendar = res.data.user.contributionsCollection.contributionCalendar;
-    return {
-        totalContributions: calendar.totalContributions,
-        weeks: calendar.weeks,
     };
 }
 async function fetchTotalCommits(username, token) {
@@ -26241,8 +25974,6 @@ const child_process_1 = __nccwpck_require__(5317);
 const fetcher_1 = __nccwpck_require__(5416);
 const themes_1 = __nccwpck_require__(3185);
 const stats_1 = __nccwpck_require__(1280);
-const top_langs_1 = __nccwpck_require__(6596);
-const contribution_graph_1 = __nccwpck_require__(6996);
 async function run() {
     try {
         const username = core.getInput("github_user_name") ||
@@ -26252,47 +25983,20 @@ async function run() {
             throw new Error("github_user_name is required. Set it or run from a GitHub Actions workflow.");
         }
         const token = core.getInput("github_token", { required: true });
-        const cardType = core.getInput("card_type") || "stats";
         const themeName = core.getInput("theme") || "default";
         const outputPath = core.getInput("output_path") || "gh-stats.svg";
         const commitMessage = core.getInput("commit_message") || "Update GitHub stats SVG [skip ci]";
         const showIcons = core.getInput("show_icons") !== "false";
-        const hideRank = core.getInput("hide_rank") === "true";
         const includeAllCommits = core.getInput("include_all_commits") === "true";
-        const langsCount = parseInt(core.getInput("langs_count") || "5", 10);
-        core.info(`Generating ${cardType} card for user: ${username}`);
+        core.info(`Generating stats card for user: ${username}`);
         core.info(`Theme: ${themeName}`);
         const theme = (0, themes_1.getTheme)(themeName);
-        let svg;
-        switch (cardType) {
-            case "stats": {
-                core.info("Fetching stats data...");
-                const stats = await (0, fetcher_1.fetchStats)(username, token, includeAllCommits);
-                core.info(`Stats fetched: ${stats.totalCommits} commits, ${stats.totalStars} stars`);
-                svg = (0, stats_1.renderStatsCard)(stats, theme, {
-                    showIcons,
-                    hideRank,
-                    includeAllCommits,
-                });
-                break;
-            }
-            case "top-langs": {
-                core.info("Fetching language data...");
-                const langs = await (0, fetcher_1.fetchTopLangs)(username, token);
-                core.info(`Languages fetched: ${langs.languages.length} languages`);
-                svg = (0, top_langs_1.renderTopLangsCard)(langs, theme, { langsCount });
-                break;
-            }
-            case "contribution-graph": {
-                core.info("Fetching contribution data...");
-                const contributions = await (0, fetcher_1.fetchContributions)(username, token);
-                core.info(`Contributions fetched: ${contributions.totalContributions} total`);
-                svg = (0, contribution_graph_1.renderContributionGraph)(contributions, theme, {});
-                break;
-            }
-            default:
-                throw new Error(`Unknown card_type: "${cardType}". Supported: stats, top-langs, contribution-graph`);
-        }
+        const stats = await (0, fetcher_1.fetchStats)(username, token, includeAllCommits);
+        core.info(`Stats fetched: ${stats.totalCommits} commits, ${stats.totalStars} stars`);
+        const svg = (0, stats_1.renderStatsCard)(stats, theme, {
+            showIcons,
+            includeAllCommits,
+        });
         const fullPath = path.resolve(outputPath);
         const dir = path.dirname(fullPath);
         if (!fs.existsSync(dir)) {

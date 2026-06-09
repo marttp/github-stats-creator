@@ -1,0 +1,23 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="440" height="188" viewBox="0 0 440 188" role="img">
+  <rect x="0.5" y="0.5" width="439" height="99%" rx="4.5" fill="#1a1b27" stroke="#1a1b27"/>
+  <text x="24" y="40" font-size="16" font-weight="600" font-family="'Segoe UI', Ubuntu, Sans-Serif" fill="#70a5fd">Thanaphoom Babparn</text>
+  <text x="24" y="56" font-size="11" font-family="'Segoe UI', Ubuntu, Sans-Serif" fill="#a0a8cd" opacity="0.4">@marttp</text>
+  <line x1="24" y1="64" x2="416" y2="64" stroke="#a0a8cd" stroke-width="0.5" opacity="0.1"/>
+  <text x="24" y="80" font-size="9" font-weight="700" font-family="'Segoe UI', Ubuntu, Sans-Serif" fill="#a0a8cd" opacity="0.3" letter-spacing="1.5">IMPACT</text>
+  <text x="209" y="80" font-size="9" font-weight="700" font-family="'Segoe UI', Ubuntu, Sans-Serif" fill="#a0a8cd" opacity="0.3" letter-spacing="1.5">ACTIVITY</text>
+  <svg x="24" y="93" width="13" height="13" viewBox="0 0 16 16" fill="#bf91f3" opacity="0.6"><path fill-rule="evenodd" d="M8 .25a.75.75 0 01.673.418l1.882 3.815 4.21.612a.75.75 0 01.416 1.279l-3.046 2.97.719 4.192a.75.75 0 01-1.088.791L8 12.347l-3.766 1.98a.75.75 0 01-1.088-.79l.72-4.194L.818 6.374a.75.75 0 01.416-1.28l4.21-.611L7.327.668A.75.75 0 018 .25zm0 2.445L6.615 5.5a.75.75 0 01-.564.41l-3.097.45 2.24 2.184a.75.75 0 01.216.664l-.528 3.084 2.769-1.456a.75.75 0 01.698 0l2.77 1.456-.53-3.084a.75.75 0 01.216-.664l2.24-2.183-3.096-.45a.75.75 0 01-.564-.41L8 2.694v.001z"/></svg>
+<text x="42" y="104" font-size="14" font-weight="700" font-family="'SF Mono', 'Cascadia Code', 'Consolas', monospace" fill="#a0a8cd">245</text>
+<text x="74" y="104" font-size="12" font-family="'Segoe UI', Ubuntu, Sans-Serif" fill="#a0a8cd" opacity="0.5">stars</text>
+<svg x="24" y="117" width="13" height="13" viewBox="0 0 16 16" fill="#bf91f3" opacity="0.6"><path fill-rule="evenodd" d="M2 2.5A2.5 2.5 0 014.5 0h8.75a.75.75 0 01.75.75v12.5a.75.75 0 01-.75.75h-2.5a.75.75 0 110-1.5h1.75v-2h-8a1 1 0 00-.714 1.7.75.75 0 01-1.072 1.05A2.495 2.495 0 012 11.5v-9zm10.5-1h-8a1 1 0 00-1 1v6.708A2.486 2.486 0 014.5 9h8.5V1.5zm-8 11a1 1 0 100-2 1 1 0 000 2z"/></svg>
+<text x="42" y="128" font-size="14" font-weight="700" font-family="'SF Mono', 'Cascadia Code', 'Consolas', monospace" fill="#a0a8cd">5</text>
+<text x="57" y="128" font-size="12" font-family="'Segoe UI', Ubuntu, Sans-Serif" fill="#a0a8cd" opacity="0.5">contributions</text>
+  <svg x="209" y="93" width="13" height="13" viewBox="0 0 16 16" fill="#bf91f3" opacity="0.6"><path fill-rule="evenodd" d="M1.5 3.25a2.25 2.25 0 113 2.122v5.256a2.251 2.251 0 11-1.5 0V5.372A2.25 2.25 0 011.5 3.25zm5.677-.177L9.573.677A.25.25 0 0110 .854V2.5h1A2.5 2.5 0 0113.5 5v5.628a2.251 2.251 0 11-1.5 0V5a1 1 0 00-1-1h-1v1.646a.25.25 0 01-.427.177L7.177 3.427a.25.25 0 010-.354zM3.75 2.5a.75.75 0 100 1.5.75.75 0 000-1.5zm0 9.5a.75.75 0 100 1.5.75.75 0 000-1.5zm8.25.75a.75.75 0 111.5 0 .75.75 0 01-1.5 0z"/></svg>
+<text x="227" y="104" font-size="14" font-weight="700" font-family="'SF Mono', 'Cascadia Code', 'Consolas', monospace" fill="#a0a8cd">721</text>
+<text x="259" y="104" font-size="12" font-family="'Segoe UI', Ubuntu, Sans-Serif" fill="#a0a8cd" opacity="0.5">commits</text>
+<svg x="209" y="117" width="13" height="13" viewBox="0 0 16 16" fill="#bf91f3" opacity="0.6"><path fill-rule="evenodd" d="M7.177 3.073L9.573.677A.25.25 0 0110 .854v4.792a.25.25 0 01-.427.177L7.177 3.427a.25.25 0 010-.354zM3.75 2.5a.75.75 0 100 1.5.75.75 0 000-1.5zm-2.25.75a2.25 2.25 0 113 2.122v5.256a2.251 2.251 0 11-1.5 0V5.372A2.25 2.25 0 011.5 3.25zm10.31 7.939a.75.75 0 00-1.042-.254 3.5 3.5 0 00-1.768 3.044.75.75 0 001.5 0 2 2 0 011.01-1.748.75.75 0 00.254-1.042h-.254zM3.75 12.5a.75.75 0 100 1.5.75.75 0 000-1.5z"/></svg>
+<text x="227" y="128" font-size="14" font-weight="700" font-family="'SF Mono', 'Cascadia Code', 'Consolas', monospace" fill="#a0a8cd">249</text>
+<text x="259" y="128" font-size="12" font-family="'Segoe UI', Ubuntu, Sans-Serif" fill="#a0a8cd" opacity="0.5">pull requests</text>
+<svg x="209" y="141" width="13" height="13" viewBox="0 0 16 16" fill="#bf91f3" opacity="0.6"><path fill-rule="evenodd" d="M8 1.5a6.5 6.5 0 100 13 6.5 6.5 0 000-13zM0 8a8 8 0 1116 0A8 8 0 010 8zm9 3a1 1 0 11-2 0 1 1 0 012 0zm-.25-6.25a.75.75 0 00-1.5 0v3.5a.75.75 0 001.5 0v-3.5z"/></svg>
+<text x="227" y="152" font-size="14" font-weight="700" font-family="'SF Mono', 'Cascadia Code', 'Consolas', monospace" fill="#a0a8cd">18</text>
+<text x="250" y="152" font-size="12" font-family="'Segoe UI', Ubuntu, Sans-Serif" fill="#a0a8cd" opacity="0.5">issues</text>
+</svg>
