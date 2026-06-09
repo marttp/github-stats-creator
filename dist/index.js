@@ -25805,9 +25805,9 @@ function isDark(hex) {
 
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.renderStatsCard = renderStatsCard;
-const rank_1 = __nccwpck_require__(3525);
 const icons_1 = __nccwpck_require__(1861);
 const FONT = "'Segoe UI', Ubuntu, Sans-Serif";
+const MONO = "'SF Mono', 'Cascadia Code', 'Consolas', monospace";
 function kFormatter(n) {
     if (n >= 1000000)
         return (n / 1000000).toFixed(1) + "M";
@@ -25821,25 +25821,17 @@ function encodeHTML(str) {
     });
 }
 const ROW_H = 24;
+const CHAR_W = 8.4;
 function metricRow(m, x, y, iconColor, textColor) {
     const icon = `<svg x="${x}" y="${y + 1}" width="13" height="13" viewBox="0 0 16 16" fill="#${iconColor}" opacity="0.6">${m.icon}</svg>`;
     const numX = x + 18;
-    const labelX = x + 50;
+    const formatted = kFormatter(m.value);
+    const labelX = numX + Math.ceil(formatted.length * CHAR_W) + 6;
     return `${icon}
-<text x="${numX}" y="${y + 12}" font-size="14" font-weight="700" font-family="${FONT}" fill="#${textColor}">${kFormatter(m.value)}</text>
+<text x="${numX}" y="${y + 12}" font-size="14" font-weight="700" font-family="${MONO}" fill="#${textColor}">${formatted}</text>
 <text x="${labelX}" y="${y + 12}" font-size="12" font-family="${FONT}" fill="#${textColor}" opacity="0.5">${m.label}</text>`;
 }
 function renderStatsCard(stats, theme, options) {
-    const rank = (0, rank_1.calculateRank)({
-        allCommits: options.includeAllCommits,
-        commits: stats.totalCommits,
-        prs: stats.totalPRs,
-        issues: stats.totalIssues,
-        reviews: stats.totalReviews,
-        repos: stats.repos,
-        stars: stats.totalStars,
-        followers: stats.followers,
-    });
     const impactMetrics = [
         { icon: icons_1.icons.star, value: stats.totalStars, label: "stars" },
         { icon: icons_1.icons.contribs, value: stats.contributedTo, label: "contributions" },
@@ -25849,36 +25841,19 @@ function renderStatsCard(stats, theme, options) {
         { icon: icons_1.icons.prs, value: stats.totalPRs, label: "pull requests" },
         { icon: icons_1.icons.issues, value: stats.totalIssues, label: "issues" },
     ];
-    const showRank = !options.hideRank;
     const p = 24;
-    const cardWidth = 520;
-    // Layout Y coordinates
+    const cardWidth = 440;
     const nameY = p + 16;
     const loginY = p + 32;
     const sepY = loginY + 8;
     const sectionLabelY = sepY + 16;
     const firstRowY = sectionLabelY + 12;
-    // Layout X coordinates — 3 regions
     const impactX = p;
-    const activityX = 185;
-    const rankAreaX = 370;
-    const maxRows = Math.max(impactMetrics.length, activityMetrics.length, showRank ? 3 : 0);
+    const activityX = Math.floor(cardWidth / 2) + 10;
+    const maxRows = Math.max(impactMetrics.length, activityMetrics.length);
     const bodyH = maxRows * ROW_H;
     const cardHeight = firstRowY + bodyH + p;
     const sectionStyle = `font-size="9" font-weight="700" font-family="${FONT}" fill="#${theme.text_color}" opacity="0.3" letter-spacing="1.5"`;
-    // Rank badge as a 3rd body column (same vertical space as metrics)
-    let rankBody = "";
-    if (showRank) {
-        const rankR = 24;
-        const rankCx = rankAreaX + 50;
-        const rankCy = firstRowY + ROW_H + 4;
-        const circ = 2 * Math.PI * rankR;
-        const filled = ((100 - rank.percentile) / 100) * circ;
-        rankBody = `<circle cx="${rankCx}" cy="${rankCy}" r="${rankR}" fill="none" stroke="#${theme.text_color}" stroke-width="4" opacity="0.06"/>
-<circle cx="${rankCx}" cy="${rankCy}" r="${rankR}" fill="none" stroke="#${theme.ring_color}" stroke-width="4" stroke-linecap="round" stroke-dasharray="${circ}" stroke-dashoffset="${circ - filled}" transform="rotate(-90 ${rankCx} ${rankCy})"/>
-<text x="${rankCx}" y="${rankCy - 2}" text-anchor="middle" font-size="9" font-weight="700" font-family="${FONT}" fill="#${theme.text_color}" opacity="0.35" letter-spacing="1">RANK</text>
-<text x="${rankCx}" y="${rankCy + 16}" text-anchor="middle" font-size="18" font-weight="800" font-family="${FONT}" fill="#${theme.text_color}">${rank.level}</text>`;
-    }
     const impactRows = impactMetrics
         .map((m, i) => metricRow(m, impactX, firstRowY + i * ROW_H, theme.icon_color, theme.text_color))
         .join("\n");
@@ -25894,7 +25869,6 @@ function renderStatsCard(stats, theme, options) {
   <text x="${activityX}" y="${sectionLabelY}" ${sectionStyle}>ACTIVITY</text>
   ${impactRows}
   ${activityRows}
-  ${rankBody}
 </svg>`;
 }
 
@@ -26358,55 +26332,6 @@ function gitCommitAndPush(filePath, message) {
     }
 }
 run();
-
-
-/***/ }),
-
-/***/ 3525:
-/***/ ((__unused_webpack_module, exports) => {
-
-"use strict";
-
-Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.calculateRank = calculateRank;
-function exponentialCdf(x) {
-    return 1 - 2 ** -x;
-}
-function logNormalCdf(x) {
-    return x / (1 + x);
-}
-function calculateRank(stats) {
-    const COMMITS_MEDIAN = stats.allCommits ? 1000 : 250;
-    const COMMITS_WEIGHT = 2;
-    const PRS_MEDIAN = 50;
-    const PRS_WEIGHT = 3;
-    const ISSUES_MEDIAN = 25;
-    const ISSUES_WEIGHT = 1;
-    const REVIEWS_MEDIAN = 2;
-    const REVIEWS_WEIGHT = 1;
-    const STARS_MEDIAN = 50;
-    const STARS_WEIGHT = 4;
-    const FOLLOWERS_MEDIAN = 10;
-    const FOLLOWERS_WEIGHT = 1;
-    const TOTAL_WEIGHT = COMMITS_WEIGHT +
-        PRS_WEIGHT +
-        ISSUES_WEIGHT +
-        REVIEWS_WEIGHT +
-        STARS_WEIGHT +
-        FOLLOWERS_WEIGHT;
-    const THRESHOLDS = [1, 12.5, 25, 37.5, 50, 62.5, 75, 87.5, 100];
-    const LEVELS = ["S", "A+", "A", "A-", "B+", "B", "B-", "C+", "C"];
-    const rank = 1 -
-        (COMMITS_WEIGHT * exponentialCdf(stats.commits / COMMITS_MEDIAN) +
-            PRS_WEIGHT * exponentialCdf(stats.prs / PRS_MEDIAN) +
-            ISSUES_WEIGHT * exponentialCdf(stats.issues / ISSUES_MEDIAN) +
-            REVIEWS_WEIGHT * exponentialCdf(stats.reviews / REVIEWS_MEDIAN) +
-            STARS_WEIGHT * logNormalCdf(stats.stars / STARS_MEDIAN) +
-            FOLLOWERS_WEIGHT * logNormalCdf(stats.followers / FOLLOWERS_MEDIAN)) /
-            TOTAL_WEIGHT;
-    const level = LEVELS[THRESHOLDS.findIndex((t) => rank * 100 <= t)] || "C";
-    return { level, percentile: rank * 100 };
-}
 
 
 /***/ }),

@@ -1,9 +1,9 @@
 import { StatsData } from "../fetcher";
-import { calculateRank } from "../rank";
 import { icons } from "../icons";
 import { Theme } from "../themes";
 
 const FONT = "'Segoe UI', Ubuntu, Sans-Serif";
+const MONO = "'SF Mono', 'Cascadia Code', 'Consolas', monospace";
 
 function kFormatter(n: number): string {
   if (n >= 1000000) return (n / 1000000).toFixed(1) + "M";
@@ -18,6 +18,7 @@ function encodeHTML(str: string): string {
 }
 
 const ROW_H = 24;
+const CHAR_W = 8.4;
 
 interface Metric {
   icon: string;
@@ -34,9 +35,10 @@ function metricRow(
 ): string {
   const icon = `<svg x="${x}" y="${y + 1}" width="13" height="13" viewBox="0 0 16 16" fill="#${iconColor}" opacity="0.6">${m.icon}</svg>`;
   const numX = x + 18;
-  const labelX = x + 50;
+  const formatted = kFormatter(m.value);
+  const labelX = numX + Math.ceil(formatted.length * CHAR_W) + 6;
   return `${icon}
-<text x="${numX}" y="${y + 12}" font-size="14" font-weight="700" font-family="${FONT}" fill="#${textColor}">${kFormatter(m.value)}</text>
+<text x="${numX}" y="${y + 12}" font-size="14" font-weight="700" font-family="${MONO}" fill="#${textColor}">${formatted}</text>
 <text x="${labelX}" y="${y + 12}" font-size="12" font-family="${FONT}" fill="#${textColor}" opacity="0.5">${m.label}</text>`;
 }
 
@@ -49,17 +51,6 @@ export function renderStatsCard(
     includeAllCommits: boolean;
   },
 ): string {
-  const rank = calculateRank({
-    allCommits: options.includeAllCommits,
-    commits: stats.totalCommits,
-    prs: stats.totalPRs,
-    issues: stats.totalIssues,
-    reviews: stats.totalReviews,
-    repos: stats.repos,
-    stars: stats.totalStars,
-    followers: stats.followers,
-  });
-
   const impactMetrics: Metric[] = [
     { icon: icons.star, value: stats.totalStars, label: "stars" },
     { icon: icons.contribs, value: stats.contributedTo, label: "contributions" },
@@ -71,45 +62,23 @@ export function renderStatsCard(
     { icon: icons.issues, value: stats.totalIssues, label: "issues" },
   ];
 
-  const showRank = !options.hideRank;
   const p = 24;
-  const cardWidth = 520;
+  const cardWidth = 440;
 
-  // Layout Y coordinates
   const nameY = p + 16;
   const loginY = p + 32;
   const sepY = loginY + 8;
   const sectionLabelY = sepY + 16;
   const firstRowY = sectionLabelY + 12;
 
-  // Layout X coordinates — 3 regions
   const impactX = p;
-  const activityX = 185;
-  const rankAreaX = 370;
+  const activityX = Math.floor(cardWidth / 2) + 10;
 
-  const maxRows = Math.max(
-    impactMetrics.length,
-    activityMetrics.length,
-    showRank ? 3 : 0,
-  );
+  const maxRows = Math.max(impactMetrics.length, activityMetrics.length);
   const bodyH = maxRows * ROW_H;
   const cardHeight = firstRowY + bodyH + p;
 
   const sectionStyle = `font-size="9" font-weight="700" font-family="${FONT}" fill="#${theme.text_color}" opacity="0.3" letter-spacing="1.5"`;
-
-  // Rank badge as a 3rd body column (same vertical space as metrics)
-  let rankBody = "";
-  if (showRank) {
-    const rankR = 24;
-    const rankCx = rankAreaX + 50;
-    const rankCy = firstRowY + ROW_H + 4;
-    const circ = 2 * Math.PI * rankR;
-    const filled = ((100 - rank.percentile) / 100) * circ;
-    rankBody = `<circle cx="${rankCx}" cy="${rankCy}" r="${rankR}" fill="none" stroke="#${theme.text_color}" stroke-width="4" opacity="0.06"/>
-<circle cx="${rankCx}" cy="${rankCy}" r="${rankR}" fill="none" stroke="#${theme.ring_color}" stroke-width="4" stroke-linecap="round" stroke-dasharray="${circ}" stroke-dashoffset="${circ - filled}" transform="rotate(-90 ${rankCx} ${rankCy})"/>
-<text x="${rankCx}" y="${rankCy - 2}" text-anchor="middle" font-size="9" font-weight="700" font-family="${FONT}" fill="#${theme.text_color}" opacity="0.35" letter-spacing="1">RANK</text>
-<text x="${rankCx}" y="${rankCy + 16}" text-anchor="middle" font-size="18" font-weight="800" font-family="${FONT}" fill="#${theme.text_color}">${rank.level}</text>`;
-  }
 
   const impactRows = impactMetrics
     .map((m, i) =>
@@ -132,6 +101,5 @@ export function renderStatsCard(
   <text x="${activityX}" y="${sectionLabelY}" ${sectionStyle}>ACTIVITY</text>
   ${impactRows}
   ${activityRows}
-  ${rankBody}
 </svg>`;
 }
