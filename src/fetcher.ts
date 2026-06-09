@@ -72,10 +72,31 @@ function graphqlRequest(
         let data = "";
         res.on("data", (chunk) => (data += chunk));
         res.on("end", () => {
+          if (res.statusCode && res.statusCode >= 400) {
+            reject(
+              new Error(
+                `GitHub API returned HTTP ${res.statusCode}: ${data.substring(0, 200)}`,
+              ),
+            );
+            return;
+          }
           try {
-            resolve(JSON.parse(data));
+            const parsed = JSON.parse(data);
+            if (parsed.data === undefined && !parsed.errors) {
+              reject(
+                new Error(
+                  `Unexpected response from GitHub API (possibly rate limited): ${data.substring(0, 200)}`,
+                ),
+              );
+              return;
+            }
+            resolve(parsed);
           } catch {
-            reject(new Error(`Failed to parse GraphQL response: ${data}`));
+            reject(
+              new Error(
+                `Failed to parse GitHub API response (possibly rate limited or HTML error page). Status: ${res.statusCode}. Body: ${data.substring(0, 300)}`,
+              ),
+            );
           }
         });
       },
@@ -184,7 +205,7 @@ async function fetchAllRepos(
   let hasNextPage = initialData.data?.user?.repositories.pageInfo.hasNextPage || false;
   let endCursor = initialData.data?.user?.repositories.pageInfo.endCursor || null;
 
-  while (hasNextPage && allNodes.length < 500) {
+  while (hasNextPage && allNodes.length < 200) {
     const res = await graphqlRequest(STATS_QUERY, { login, after: endCursor }, token);
     if (!res.data?.user) break;
     const nodes = res.data.user.repositories.nodes || [];
