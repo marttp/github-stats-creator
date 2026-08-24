@@ -157,6 +157,7 @@ export async function fetchStats(
   const res = await graphqlRequest(STATS_QUERY, { login: username }, token);
 
   if (res.errors?.length) {
+    console.error("DEBUG_RAW_ERRORS", JSON.stringify(res.errors.slice(0, 3)));
     const forbidden = res.errors.some((e) => e.type === "FORBIDDEN");
     const suffix = forbidden
       ? " — the token can't read other repositories owned by this user. Use a personal access token with the 'read:user' scope (and 'repo' if you have private repos) instead of the default GITHUB_TOKEN."
