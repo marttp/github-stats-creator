@@ -35,8 +35,10 @@ jobs:
       - name: Generate stats card
         uses: marttp/github-stats-creator@v1
         with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
+          github_token: ${{ secrets.STATS_TOKEN }}
 ```
+
+`STATS_TOKEN` is a personal access token you create and add as a repo secret — see [Token Scopes](#token-scopes) below. The default `GITHUB_TOKEN` will not work; it can only read the repo the workflow runs in, not your other repos, so the stats query is rejected.
 
 Then embed in your README:
 
@@ -49,7 +51,7 @@ Then embed in your README:
 | Input | Description | Required | Default |
 |-------|-------------|----------|---------|
 | `github_user_name` | GitHub username. Defaults to the repository owner. | No | `""` (auto-detected) |
-| `github_token` | GitHub token (PAT or `GITHUB_TOKEN`). Needs `read:user` scope. | Yes | `${{ github.token }}` |
+| `github_token` | Personal access token with `public_repo` (or `repo`) and `read:user` scopes. See [Token Scopes](#token-scopes). | Yes | `${{ github.token }}` |
 | `theme` | Theme preset (see below) | No | `default` |
 | `output_path` | Output file path for the SVG | No | `gh-stats.svg` |
 | `commit_message` | Git commit message when pushing the SVG | No | `Update GitHub stats SVG [skip ci]` |
@@ -83,8 +85,14 @@ The workflow requires `contents: write` permission to commit and push the SVG fi
 
 ## Token Scopes
 
-- **Public repos**: `GITHUB_TOKEN` (default) works out of the box
-- **Private repos** or `include_all_commits`: use a PAT with `repo` and `read:user` scopes
+The stats card aggregates data (stars, PRs, issues) across all of your repositories, not just the one the workflow runs in. The default `GITHUB_TOKEN` is scoped to a single repo and cannot read that data, even for other public repos you own — GitHub's API rejects those fields with `Resource not accessible by integration`.
+
+Use a personal access token instead:
+
+- **Classic PAT**: `public_repo` scope (add `repo` instead if you want private repos included) plus `read:user`
+- **Fine-grained PAT**: grant it access to all of your repositories with `Metadata: read` and `Contents: read`, and grant `read:user`/followers under account permissions
+
+Add the token as a repo secret (e.g. `STATS_TOKEN`) and reference it in `github_token` — do not use `${{ secrets.GITHUB_TOKEN }}`.
 
 ## License
 
