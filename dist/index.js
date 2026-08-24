@@ -25846,7 +25846,7 @@ async function fetchAllRepos(login, token, initialData) {
 async function fetchStats(username, token, includeAllCommits) {
     const res = await graphqlRequest(STATS_QUERY, { login: username }, token);
     if (res.errors?.length) {
-        throw new Error(`GraphQL error: ${res.errors.map((e) => e.message).join(", ")}`);
+        throw new Error(`GraphQL error (DEBUG): ${JSON.stringify(res.errors)}`);
     }
     if (!res.data?.user) {
         throw new Error(`User not found: ${username}`);
