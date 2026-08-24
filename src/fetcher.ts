@@ -1,19 +1,8 @@
 import * as https from "https";
 
-interface LanguageEdge {
-  size: number;
-  node: {
-    name: string;
-    color: string | null;
-  };
-}
-
 interface RepoNode {
   name: string;
   stargazers: { totalCount: number };
-  languages: {
-    edges: LanguageEdge[];
-  };
 }
 
 interface GraphQLResponse {
@@ -117,15 +106,6 @@ query userInfo($login: String!, $after: String) {
       nodes {
         name
         stargazers { totalCount }
-        languages(first: 10, orderBy: {direction: DESC, field: SIZE}) {
-          edges {
-            size
-            node {
-              name
-              color
-            }
-          }
-        }
       }
       pageInfo { hasNextPage endCursor }
     }

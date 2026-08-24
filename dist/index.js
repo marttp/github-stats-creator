@@ -25820,15 +25820,6 @@ query userInfo($login: String!, $after: String) {
       nodes {
         name
         stargazers { totalCount }
-        languages(first: 10, orderBy: {direction: DESC, field: SIZE}) {
-          edges {
-            size
-            node {
-              name
-              color
-            }
-          }
-        }
       }
       pageInfo { hasNextPage endCursor }
     }
