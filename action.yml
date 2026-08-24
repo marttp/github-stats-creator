@@ -12,7 +12,7 @@ inputs:
     required: false
     default: ""
   github_token:
-    description: "Personal access token with public_repo (or repo) and read:user scopes. The default GITHUB_TOKEN cannot read other repos you own and will fail."
+    description: "Classic personal access token with public_repo (or repo) and read:user scopes. GITHUB_TOKEN and fine-grained PATs cannot read other repos you own and will fail."
     required: true
     default: ${{ github.token }}
   theme:

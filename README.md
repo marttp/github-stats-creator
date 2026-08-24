@@ -51,7 +51,7 @@ Then embed in your README:
 | Input | Description | Required | Default |
 |-------|-------------|----------|---------|
 | `github_user_name` | GitHub username. Defaults to the repository owner. | No | `""` (auto-detected) |
-| `github_token` | Personal access token with `public_repo` (or `repo`) and `read:user` scopes. See [Token Scopes](#token-scopes). | Yes | `${{ github.token }}` |
+| `github_token` | Classic personal access token with `public_repo` (or `repo`) and `read:user` scopes. Fine-grained PATs don't work — see [Token Scopes](#token-scopes). | Yes | `${{ github.token }}` |
 | `theme` | Theme preset (see below) | No | `default` |
 | `output_path` | Output file path for the SVG | No | `gh-stats.svg` |
 | `commit_message` | Git commit message when pushing the SVG | No | `Update GitHub stats SVG [skip ci]` |
@@ -87,10 +87,9 @@ The workflow requires `contents: write` permission to commit and push the SVG fi
 
 The stats card aggregates data (stars, PRs, issues) across all of your repositories, not just the one the workflow runs in. The default `GITHUB_TOKEN` is scoped to a single repo and cannot read that data, even for other public repos you own — GitHub's API rejects those fields with `Resource not accessible by integration`.
 
-Use a personal access token instead:
+Use a **classic** personal access token: `public_repo` scope (add `repo` instead if you want private repos included) plus `read:user`.
 
-- **Classic PAT**: `public_repo` scope (add `repo` instead if you want private repos included) plus `read:user`
-- **Fine-grained PAT**: grant it access to all of your repositories with `Metadata: read` and `Contents: read`, and grant `read:user`/followers under account permissions
+Fine-grained PATs do not work here, even fully scoped ("All repositories" access, `Contents: read`, `Metadata: read`, `Followers: read`) — confirmed by testing: GitHub's GraphQL API still returns `Resource not accessible by personal access token` on the `stargazers` field for every repository. This is a gap in the fine-grained authorization model for this query shape (reading another user's `repositories` connection), not a configuration mistake. Classic PATs and OAuth tokens use the older scope-based model and are unaffected.
 
 Add the token as a repo secret (e.g. `STATS_TOKEN`) and reference it in `github_token` — do not use `${{ secrets.GITHUB_TOKEN }}`.
 
